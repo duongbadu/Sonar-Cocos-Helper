@@ -37,6 +37,9 @@ public class AdMobAds extends Framework
 	private final int TOP = 1;
 	private final int BOTH = 2;
 	
+	private boolean bigAdsAble = false;
+	private boolean firstBanner = true;
+	
 	public AdMobAds()
 	{
 		
@@ -63,7 +66,7 @@ public class AdMobAds extends Framework
 		top_banner_adView.setAdSize(AdSize.BANNER);
 		top_banner_adView.setAdUnitId(banner_id_top);
 
-		AdRequest adRequest = new AdRequest.Builder()
+		final AdRequest adRequest = new AdRequest.Builder()
 		.addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
 		.addTestDevice("HASH_DEVICE_ID")
 		.addTestDevice(test_device_id)
@@ -99,13 +102,25 @@ public class AdMobAds extends Framework
 		// Create the interstitial.
 	    interstitial = new InterstitialAd(activity);
 	    interstitial.setAdUnitId(interstitial_id);
+	    interstitial.loadAd(adRequest);
 
 	    interstitial.setAdListener(new AdListener()
 	    {
 	          public void onAdLoaded()
 	          {
-	        	  LoadFullscreenAd();
+	        	  if (bigAdsAble) {
+		        	  LoadFullscreenAd();
+		        	  bigAdsAble = false;
+	        	  }
 	          }
+	          
+	          @Override
+	        public void onAdClosed() {
+	        	// TODO Auto-generated method stub
+		 	    // Begin loading your interstitial.
+	        	interstitial.loadAd(adRequest);
+	        	super.onAdClosed();
+	        }
 	    });
 	    
 	    HideBannerAd(BOTH);
@@ -396,16 +411,32 @@ public class AdMobAds extends Framework
 	
 	void LoadFullscreenAd()
 	{
+//		if(interstitial != null) 
+//		{
+//			activity.runOnUiThread(new Runnable()
+//		     {
+//	
+//			     @Override
+//			     public void run()
+//			     {
+//			    	 if(interstitial.isLoaded())
+//			    		 interstitial.show();
+//			     }
+//		     });
+//		}
+		
 		if(interstitial != null) 
 		{
+			bigAdsAble = true;
 			activity.runOnUiThread(new Runnable()
 		     {
-	
 			     @Override
 			     public void run()
 			     {
-			    	 if(interstitial.isLoaded())
+			    	 if(interstitial.isLoaded()) {
+			    		 bigAdsAble = false;
 			    		 interstitial.show();
+			    	 }
 			     }
 		     });
 		}
@@ -414,24 +445,18 @@ public class AdMobAds extends Framework
 	@Override
 	public void ShowFullscreenAd()
 	{   
-		
-	    
-	    if(interstitial != null) 
+		if(interstitial != null) 
 		{
+			bigAdsAble = true;
 			activity.runOnUiThread(new Runnable()
-		    {
-	
+		     {
 			     @Override
 			     public void run()
 			     {
-			    	// Create ad request.
-			 	    AdRequest adRequest = new AdRequest.Builder()
-			 	    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-			 		.addTestDevice("HASH_DEVICE_ID")
-			 		.addTestDevice(test_device_id).build();
-
-			 	    // Begin loading your interstitial.
-			 	    interstitial.loadAd(adRequest);
+			    	 if(interstitial.isLoaded()) {
+			    		 bigAdsAble = false;
+			    		 interstitial.show();
+			    	 }
 			     }
 		     });
 		}
